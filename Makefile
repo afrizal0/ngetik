@@ -2,7 +2,7 @@ CC = cc
 FLAGS = -Wall -Werror -Wpedantic -Wextra
 SRC = src
 OBJ = obj
-BIN = ngetik
+BIN = textiny
 SRC_FILES = $(wildcard $(SRC)/*.[ch])
 OBJ_FILES = $(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(wildcard $(SRC)/*.c))
 

@@ -13,6 +13,8 @@ struct termios orig_termios;
 extern editorConfig E;
 
 void initEditor(void) {
+	E.cursorX = 0; // horizontal
+	E.cursorY = 0; // vertical
     if(getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
 }
 

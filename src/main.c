@@ -6,11 +6,12 @@
 
 #include "terminal.h"
 #include "winsize.h"
+#include "editor.h"
 
 int main() {	
 	enableRawMode();
 	initEditor();
-
+	
 	while(1) {
 		editorRefreshScreen();
 		editorProcessReadKey();
