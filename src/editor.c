@@ -21,7 +21,7 @@ int editorReadKey(void) {
     if(input == '\x1b') {
         char seq[3];
 
-        if(read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';   
+		if(read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';   
         if(read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
        
         /* 
@@ -31,12 +31,37 @@ int editorReadKey(void) {
         \x1b[D -> Arrow Left
         */       
         if(seq[0] == '[') {
+            if(seq[1] >= '0' && seq[1] <= '9') {
+                if(read(STDIN_FILENO, &seq[2], 1) != 1) return '\x1b';   
+                if(seq[2] == '~') {
+                    switch (seq[1])
+                    {
+						case '1': return HOME_KEY;
+						case '3': return DELETE_KEY;
+                        case '4': return END_KEY;
+						case '5': return PAGE_UP;
+                        case '6': return PAGE_DOWN;
+                        case '7': return HOME_KEY;
+                        case '8': return END_KEY;
+                    	
+                    }
+                }
+            } else {
+				switch (seq[1])
+				{
+					case 'A': return ARROW_UP;
+					case 'B': return ARROW_DOWN;
+					case 'C': return ARROW_RIGHT;
+					case 'D': return ARROW_LEFT;
+					case 'H': return HOME_KEY;
+					case 'F': return END_KEY;
+				}
+      		  }
+        } else if (seq[0] == '0') {
             switch (seq[1])
             {
-                case 'A': return ARROW_UP;
-                case 'B': return ARROW_DOWN;
-                case 'C': return ARROW_RIGHT;
-                case 'D': return ARROW_LEFT;
+            case 'H': return HOME_KEY;
+            case 'E': return END_KEY;
             }
         }
         return '\x1b';
@@ -77,35 +102,67 @@ void editorProcessReadKey(void) {
         write(STDOUT_FILENO, "\x1b[H", 3);
 		exit(0);
 		break;
-    case ARROW_UP:
+    
+    case HOME_KEY:
+        E.cursorX = 0;
+        break;
+    case END_KEY:
+        E.cursorX = E.screencols - 1;
+        break;
+
+	case PAGE_UP:
+	case PAGE_DOWN:
+		{
+			int times = E.screenrows;
+			while(times--) {
+				editorMoveCursor(c  == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+			}
+		}
+		break;
+
+	case ARROW_UP:
     case ARROW_LEFT:
     case ARROW_DOWN:
-    case ARROW_RIGHT:
+    case ARROW_RIGHT:	
         editorMoveCursor(c);
         break;
 	}
 }
 
-/* Draw tilde */
+void drawHomeScreenText(int homeScreenLen, struct abuff *ab, const char *homeScreen) {
+    if (homeScreenLen > E.screencols) homeScreenLen = E.screencols;
+    // center the welcome text
+    int padding = (E.screencols - homeScreenLen) / 2;
+    if(padding) {
+        abAppend(ab, "~", 1);
+        padding--;
+    }
+    while(padding--) abAppend(ab, " ", 1);
+    abAppend(ab, homeScreen, homeScreenLen);
+}
+
 void editorDrawRows(struct abuff *ab ) {
     int y;
     for (y = 0; y < E.screenrows; y++)
     {
-        if(y == E.screenrows / 3) {
+        if(y == E.screenrows / 2) {
+            /* TODO: Make home screen text colored */ 
             char homeScreen[80];
             int homeScreenLen = snprintf(homeScreen, sizeof(homeScreen),
-            "%s -- version %s", APP_NAME, VERSION);
-            if (homeScreenLen > E.screencols) homeScreenLen = E.screencols;
-            // center the welcome text
-            int padding = (E.screencols - homeScreenLen) / 2;
-            if(padding) {
-                abAppend(ab, "~", 1);
-                padding--;
-            }
-            while(padding--) abAppend(ab, " ", 1);
-            abAppend(ab, homeScreen, homeScreenLen);
+                "\033[38;5;206m%s -- version %s\n", APP_NAME, VERSION);
+            drawHomeScreenText(homeScreenLen, ab, homeScreen);
+
+
+            // char tx[30];
+            // int text = snprintf(tx, sizeof(tx),
+            //     "\033[38;5;206m%s", "Support Palestine");
+
+            // abAppend(ab, tx, text);
         } else {
-            abAppend(ab, "~", 1);
+            char tilde[10];
+            int tildeLen = snprintf(tilde, sizeof(tilde),
+            "\033[0;37m%c", '~');
+            abAppend(ab, tilde, tildeLen);
         }
         abAppend(ab, "\x1b[K", 3);
         if(y < E.screenrows - 1) 

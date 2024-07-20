@@ -3,7 +3,7 @@
 
 #define CTRL_KEY(k) ((k) & 0x1f) // convert 'k' to ctrl-k 
 
-#define APP_NAME "textiny"
+#define APP_NAME "Textiny"
 #define VERSION "1.0"
 
 typedef struct
@@ -19,7 +19,10 @@ enum EditorKey {
     ARROW_RIGHT,
     ARROW_LEFT,
     PAGE_UP,
-    PAGE_DOWN
+    PAGE_DOWN,
+    HOME_KEY,
+    END_KEY,
+    DELETE_KEY
 };
 
 int editorReadKey(void);
