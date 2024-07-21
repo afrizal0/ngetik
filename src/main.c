@@ -1,21 +1,24 @@
-#include <stdlib.h>
-#include <errno.h>
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <unistd.h>
-#include <stdio.h>
-#include <ctype.h>
 
 #include "terminal.h"
-#include "winsize.h"
 #include "editor.h"
 
-int main() {	
+int main(int argc, char *argv[])
+{
 	enableRawMode();
 	initEditor();
-	
-	while(1) {
+	if(argc >= 2) {
+		editorOpen(argv[1]);
+	}
+
+	while (1)
+	{
 		editorRefreshScreen();
 		editorProcessReadKey();
 	}
 	return 0;
 }
-
